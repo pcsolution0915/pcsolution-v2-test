@@ -1795,7 +1795,7 @@ body.printing-customer-quote #quoteModal .danawa-area {
      컴오아시스 견적서만 출력
   ===================================== */
 
-  body:not(.printing-customer-quote) #supplierQuoteModal {
+  body:not(.printing-customer-quote):not(.printing-supplier-reply) #supplierQuoteModal {
     display: block !important;
 
     position: static !important;
@@ -6191,6 +6191,21 @@ async function applySupplierReplyToEstimate() {
   currentSupplierReplyItems
     .forEach(function(item) {
 
+/* =====================================
+   V2.0 택배비 / 공임 분리
+
+   컴오아시스 택배비는
+   고객 견적 공임에 반영하지 않음
+===================================== */
+
+if (
+  ["Labor", "공임", "택배비"].includes(
+    item.part_type
+  )
+) {
+  return;
+}
+
       const targetId =
         priceFields[
           item.part_type
@@ -8068,32 +8083,66 @@ function copyEstimateToSupplierQuote() {
 
   }
 
+parts.forEach(function(part) {
 
-  parts.forEach(function(part) {
+  /* 고객 공임은 컴오아시스로 복사하지 않음 */
 
-    copyValue(
-      "estimate" + part + "Maker",
-      "supplier" + part + "Maker",
-      part === "Labor" ? "-" : ""
-    );
+  if (part === "Labor") {
+    return;
+  }
 
-    copyValue(
-      "estimate" + part + "Model",
-      "supplier" + part + "Model"
-    );
+  copyValue(
+    "estimate" + part + "Maker",
+    "supplier" + part + "Maker"
+  );
 
-    copyValue(
-      "estimate" + part + "Spec",
-      "supplier" + part + "Spec"
-    );
+  copyValue(
+    "estimate" + part + "Model",
+    "supplier" + part + "Model"
+  );
 
-    copyValue(
-      "estimate" + part + "Qty",
-      "supplier" + part + "Qty",
-      "1"
-    );
+  copyValue(
+    "estimate" + part + "Spec",
+    "supplier" + part + "Spec"
+  );
+
+  copyValue(
+    "estimate" + part + "Qty",
+    "supplier" + part + "Qty",
+    "1"
+  );
+
+});
+
+/* =====================================
+   컴오아시스 택배비 자동 입력
+===================================== */
+
+const shippingFields = {
+
+  supplierLaborMaker: "-",
+
+  supplierLaborModel: "택배비",
+
+  supplierLaborSpec: "박스당 배송비",
+
+  supplierLaborQty: "1"
+
+};
+
+
+Object.entries(shippingFields)
+  .forEach(function([id, value]) {
+
+    const element =
+      document.getElementById(id);
+
+    if (element) {
+      element.value = value;
+    }
 
   });
+  
 
 
   const request =
@@ -8480,16 +8529,24 @@ async function createSupplierReplyLink() {
       savedCount
     );
 
+/* =====================================
+   V2.0 컴오아시스 전용 회신 링크
+===================================== */
 
-    /* =====================================
-       3. 외부 회신 링크 생성
-    ===================================== */
+const replyUrl =
+  new URL(
+    "./supplier-reply.html",
+    window.location.href
+  );
 
-    const replyLink =
-      "https://pcsolution0915.github.io/pcsolution/supplier-reply.html?token=" +
-      encodeURIComponent(
-        replyToken
-      );
+replyUrl.searchParams.set(
+  "token",
+  replyToken
+);
+
+const replyLink =
+  replyUrl.toString();
+    
 
 
     /* =====================================
@@ -9637,6 +9694,511 @@ async function loadPartMaster() {
   }
 
 }
+
+</script>
+
+<style>
+
+/* =====================================
+   V2.0 컴오아시스 회신 PDF 최적화
+   A4 세로 출력
+===================================== */
+
+@media print {
+
+  /* 관리자 화면 숨기기 */
+
+  body.printing-supplier-reply > .container,
+  body.printing-supplier-reply #quoteModal,
+  body.printing-supplier-reply #supplierQuoteModal {
+    display: none !important;
+  }
+
+  /* 회신 모달 */
+
+  body.printing-supplier-reply #supplierReplyModal {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+
+  /* 회신서 본문 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .quote-modal-box {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* 버튼 숨기기 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal button {
+    display: none !important;
+  }
+
+  /* 제목 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .quote-modal-header {
+    margin-bottom: 2mm !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyModal .quote-modal-header h2 {
+    font-size: 13pt !important;
+    margin: 0 !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyModal .quote-modal-header p {
+    font-size: 7pt !important;
+    margin-top: 1mm !important;
+  }
+
+  /* 회신 정보 */
+
+  body.printing-supplier-reply
+  #supplierReplyInfo {
+    padding: 2mm !important;
+    margin-bottom: 2mm !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+  }
+
+  /* 표 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table-wrap {
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 7pt !important;
+  }
+
+  /* 표 제목 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table thead th {
+    height: 6mm !important;
+    padding: 0.7mm !important;
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+  }
+
+  /* 표 내용 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table tbody th,
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table tbody td {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0.8mm !important;
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+    vertical-align: middle !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    border: 1px solid #333 !important;
+  }
+
+  /* 행 분할 방지 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 열 너비 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table .part-col {
+    width: 10% !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table .spec-col {
+    width: 28% !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyModal .supplier-table .qty-col {
+    width: 6% !important;
+  }
+
+  /* 공급금액 합계 */
+
+  body.printing-supplier-reply
+  #supplierReplyTotalBox {
+    margin-top: 2mm !important;
+    padding: 2mm !important;
+    border-radius: 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyTotalBox > div {
+    margin-top: 1mm !important;
+    font-size: 8pt !important;
+    line-height: 1.2 !important;
+  }
+
+  body.printing-supplier-reply
+  #supplierReplyTotalAmount {
+    font-size: 14pt !important;
+    font-weight: 800 !important;
+  }
+
+  /* 추가 회신 */
+
+  body.printing-supplier-reply
+  #supplierReplyMessage {
+    margin-top: 1mm !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+  }
+
+  /* 추가 회신 상자 */
+
+  body.printing-supplier-reply
+  #supplierReplyModal
+  .supplier-table-wrap ~ div:not(#supplierReplyTotalBox) {
+    margin-top: 2mm !important;
+    padding: 2mm !important;
+  }
+
+}
+
+</style>
+
+<script>
+
+(function() {
+
+  const modal =
+    document.getElementById(
+      "supplierReplyModal"
+    );
+
+  const tbody =
+    document.getElementById(
+      "supplierReplyItems"
+    );
+
+  if (!modal || !tbody) {
+    return;
+  }
+
+  const tableWrap =
+    tbody.closest(
+      ".supplier-table-wrap"
+    );
+
+  if (!tableWrap) {
+    return;
+  }
+
+
+  /* =====================================
+     공급금액 합계 표시 영역
+  ===================================== */
+
+  const totalBox =
+    document.createElement("div");
+
+  totalBox.id =
+    "supplierReplyTotalBox";
+
+  totalBox.style.cssText = `
+    margin-top:18px;
+    padding:20px;
+    background:#eef6ff;
+    border:1px solid #bfdbfe;
+    border-radius:12px;
+    text-align:center;
+  `;
+
+  totalBox.innerHTML = `
+
+    <div style="
+      color:#475569;
+      font-size:15px;
+      font-weight:bold;
+    ">
+      💰 컴오아시스 총 공급금액
+    </div>
+
+    <div
+      id="supplierReplyTotalAmount"
+      style="
+        margin-top:8px;
+        color:#1769e0;
+        font-size:28px;
+        font-weight:800;
+      "
+    >
+      0원
+    </div>
+
+    <div
+      id="supplierReplyTotalGuide"
+      style="
+        margin-top:10px;
+        color:#64748b;
+        font-size:13px;
+        line-height:1.6;
+      "
+    ></div>
+
+  `;
+
+  totalBox.hidden = true;
+
+  tableWrap.insertAdjacentElement(
+    "afterend",
+    totalBox
+  );
+
+
+  /* =====================================
+     공급금액 자동 합계
+  ===================================== */
+
+  function updateSupplierReplyTotal() {
+
+    const items =
+      typeof currentSupplierReplyItems !==
+        "undefined"
+        ? currentSupplierReplyItems
+        : [];
+
+    const rows =
+      tbody.querySelectorAll("tr");
+
+    if (
+      !Array.isArray(items) ||
+      items.length === 0 ||
+      rows.length !== items.length ||
+      tbody.textContent.includes(
+        "불러오는 중"
+      ) ||
+      tbody.textContent.includes(
+        "불러오지 못했습니다"
+      )
+    ) {
+
+      totalBox.hidden = true;
+      return;
+
+    }
+
+    let total = 0;
+    let excluded = 0;
+
+
+    items.forEach(function(item, index) {
+
+      /* 택배비 명칭 표시 */
+
+      if (
+        ["Labor", "공임"].includes(
+          item.part_type
+        ) &&
+        String(
+          item.model_name || ""
+        ).trim() === "택배비"
+      ) {
+
+        const heading =
+          rows[index].querySelector("th");
+
+        if (heading) {
+          heading.textContent = "택배비";
+        }
+
+      }
+
+
+      /* 공급단가 정리 */
+
+      const priceText =
+        String(
+          item.supplier_price ?? ""
+        )
+        .replace(/[,원\s]/g, "");
+
+
+      const price =
+        Number(priceText);
+
+      const quantity =
+        Number(item.quantity);
+
+
+      /* 품절, 단종, 미입력 제외 */
+
+      if (
+        !/^\d+$/.test(priceText) ||
+        !Number.isSafeInteger(price) ||
+        !Number.isSafeInteger(quantity) ||
+        quantity < 1
+      ) {
+
+        excluded++;
+        return;
+
+      }
+
+
+      /* 수량 × 공급단가 */
+
+      const amount =
+        price * quantity;
+
+
+      if (
+        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+          total + amount
+        )
+      ) {
+
+        excluded++;
+        return;
+
+      }
+
+      total += amount;
+
+    });
+
+
+    document.getElementById(
+      "supplierReplyTotalAmount"
+    ).textContent =
+      total.toLocaleString("ko-KR") +
+      "원";
+
+
+    document.getElementById(
+      "supplierReplyTotalGuide"
+    ).textContent =
+
+      excluded > 0
+
+        ? `금액 미입력 또는 계산 제외 품목 ${excluded}개가 있습니다. 표시된 합계는 일부 품목 기준입니다.`
+
+        : "모든 품목의 공급금액이 합계에 반영되었습니다.";
+
+
+    totalBox.hidden = false;
+
+  }
+
+
+  /* =====================================
+     회신 품목 표시 후 자동 계산
+  ===================================== */
+
+  const observer =
+    new MutationObserver(
+      updateSupplierReplyTotal
+    );
+
+  observer.observe(
+    tbody,
+    {
+      childList: true
+    }
+  );
+
+
+  /* =====================================
+     PDF 저장 / 인쇄 버튼
+  ===================================== */
+
+  const closeButton =
+  modal.querySelector(
+    'button[onclick="closeSupplierReply()"]'
+  );
+
+  if (closeButton) {
+
+    const printButton =
+      document.createElement("button");
+
+    printButton.type = "button";
+
+    printButton.className =
+      "save-button";
+
+    printButton.textContent =
+      "🖨️ 회신서 PDF 저장 / 인쇄";
+
+    printButton.addEventListener(
+      "click",
+      function() {
+
+        if (totalBox.hidden) {
+
+          alert(
+            "회신 정보를 불러온 후 인쇄해 주세요."
+          );
+
+          return;
+
+        }
+
+        document.body.classList.add(
+          "printing-supplier-reply"
+        );
+
+        window.addEventListener(
+          "afterprint",
+          function() {
+
+            document.body.classList.remove(
+              "printing-supplier-reply"
+            );
+
+          },
+          { once: true }
+        );
+
+        window.print();
+
+      }
+    );
+
+    closeButton.parentNode.insertBefore(
+      printButton,
+      closeButton
+    );
+
+  }
+
+})();
 
 </script>
 
