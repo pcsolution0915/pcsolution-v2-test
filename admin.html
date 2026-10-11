@@ -10133,63 +10133,51 @@ async function loadPartMaster() {
     }
   );
 
+/* =====================================
+   PDF 저장 / 인쇄 버튼
+===================================== */
 
-  /* =====================================
-     PDF 저장 / 인쇄 버튼
-  ===================================== */
-
-  const closeButton =
+const closeButton =
   modal.querySelector(
     'button[onclick="closeSupplierReply()"]'
   );
 
-  if (closeButton) {
+if (closeButton) {
 
-    const printButton =
-      document.createElement("button");
+  const printButton =
+    document.createElement("button");
 
-    printButton.type = "button";
+  printButton.type = "button";
 
-    printButton.className =
-      "save-button";
+  printButton.className =
+    "save-button";
 
-    printButton.textContent =
-      "🖨️ 회신서 PDF 저장 / 인쇄";
+  printButton.textContent =
+    "🖨️ 회신서 PDF 저장 / 인쇄";
 
-    printButton.addEventListener(
-      "click",
-      function() {
+  printButton.addEventListener(
+    "click",
+    function() {
 
-        if (totalBox.hidden) {
+      if (totalBox.hidden) {
 
-          alert(
-            "회신 정보를 불러온 후 인쇄해 주세요."
-          );
-
-          return;
-
-        }
-
-        document.body.classList.add(
-          "printing-supplier-reply"
+        alert(
+          "회신 정보를 불러온 후 인쇄해 주세요."
         );
 
-        window.addEventListener(
-          "afterprint",
-          function() {
-
-            document.body.classList.remove(
-              "printing-supplier-reply"
-            );
-
-          },
-          { once: true }
-        );
-
-        window.print();
+        return;
 
       }
-    );
+
+      /* =====================================
+         V2.0 독립 PDF 출력 실행
+      ===================================== */
+
+      printSupplierReplyOnly();
+
+    }
+  );
+      );
 
     closeButton.parentNode.insertBefore(
       printButton,
