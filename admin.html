@@ -10177,7 +10177,7 @@ if (closeButton) {
 
     }
   );
-      );
+    
 
     closeButton.parentNode.insertBefore(
       printButton,
@@ -10187,6 +10187,334 @@ if (closeButton) {
   }
 
 })();
+
+</script>
+
+<!-- =====================================
+     V2.0 컴오아시스 독립 PDF 출력
+===================================== -->
+
+<script>
+
+function printSupplierReplyOnly() {
+
+  const modal =
+    document.getElementById(
+      "supplierReplyModal"
+    );
+
+  const table =
+    modal?.querySelector(
+      ".supplier-table"
+    );
+
+  const totalBox =
+    document.getElementById(
+      "supplierReplyTotalBox"
+    );
+
+  if (
+    !modal ||
+    !table ||
+    !totalBox ||
+    totalBox.hidden
+  ) {
+
+    alert("출력할 회신 정보가 없습니다.");
+    return;
+
+  }
+
+  /* HTML 특수문자 보호 */
+
+  function safe(value) {
+
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+  /* 표 데이터 생성 */
+
+  function makeRows(selector) {
+
+    return Array.from(
+      table.querySelectorAll(selector)
+    ).map(function(row) {
+
+      const cells =
+        Array.from(row.children)
+          .filter(cell =>
+            cell.matches("th, td")
+          );
+
+      return "<tr>" +
+        cells.map(function(cell) {
+
+          const tag =
+            cell.tagName.toLowerCase();
+
+          return "<" + tag + ">" +
+            safe(cell.innerText) +
+            "</" + tag + ">";
+
+        }).join("") +
+        "</tr>";
+
+    }).join("");
+
+  }
+
+  const headerRows =
+    makeRows("thead tr");
+
+  const bodyRows =
+    makeRows("tbody tr");
+
+  const info =
+    document.getElementById(
+      "supplierReplyInfo"
+    )?.innerText || "";
+
+  const total =
+    document.getElementById(
+      "supplierReplyTotalAmount"
+    )?.textContent || "0원";
+
+  const guide =
+    document.getElementById(
+      "supplierReplyTotalGuide"
+    )?.textContent || "";
+
+  const message =
+    document.getElementById(
+      "supplierReplyMessage"
+    )?.innerText || "-";
+
+  /* 새 인쇄창 */
+
+  const printWindow =
+    window.open("", "_blank");
+
+  if (!printWindow) {
+
+    alert(
+      "인쇄창이 차단되었습니다.\n팝업 차단을 해제해 주세요."
+    );
+
+    return;
+
+  }
+
+  printWindow.onload = function() {
+
+    setTimeout(function() {
+
+      printWindow.focus();
+      printWindow.print();
+
+    }, 300);
+
+  };
+
+  printWindow.document.open();
+
+  printWindow.document.write(`
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>PC SOLUTION 컴오아시스 회신서</title>
+
+<style>
+
+@page {
+  size: A4 portrait;
+  margin: 7mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+body {
+  font-family:
+    Arial,
+    "Malgun Gothic",
+    sans-serif;
+  color: #172033;
+  font-size: 8pt;
+}
+
+h1 {
+  margin: 0 0 3mm;
+  text-align: center;
+  font-size: 15pt;
+}
+
+.info {
+  padding: 2mm;
+  margin-bottom: 3mm;
+  border: 1px solid #cbd5e1;
+  white-space: pre-line;
+  font-size: 7.5pt;
+  line-height: 1.3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th,
+td {
+  border: 1px solid #475569;
+  padding: 1mm;
+  font-size: 7pt;
+  line-height: 1.2;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-line;
+}
+
+thead th {
+  background: #e2e8f0;
+  text-align: center;
+  font-weight: bold;
+}
+
+tbody th {
+  text-align: center;
+}
+
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.total {
+  margin-top: 3mm;
+  padding: 3mm;
+  border: 1px solid #94a3b8;
+  text-align: center;
+  break-inside: avoid;
+}
+
+.total-title {
+  font-weight: bold;
+  font-size: 9pt;
+}
+
+.total-amount {
+  margin-top: 1mm;
+  font-size: 15pt;
+  font-weight: 800;
+  color: #1769e0;
+}
+
+.total-guide {
+  margin-top: 1mm;
+  font-size: 7pt;
+  color: #64748b;
+}
+
+.message {
+  margin-top: 3mm;
+  padding: 2mm;
+  border: 1px solid #cbd5e1;
+  font-size: 7.5pt;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.message strong {
+  display: block;
+  margin-bottom: 1mm;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📩 컴오아시스 견적 회신서</h1>
+
+<div class="info">
+${safe(info)}
+</div>
+
+<table>
+
+<colgroup>
+  <col style="width:12%">
+  <col style="width:15%">
+  <col style="width:20%">
+  <col style="width:31%">
+  <col style="width:7%">
+  <col style="width:15%">
+</colgroup>
+
+<thead>
+${headerRows}
+</thead>
+
+<tbody>
+${bodyRows}
+</tbody>
+
+</table>
+
+<div class="total">
+
+  <div class="total-title">
+    컴오아시스 총 공급금액
+  </div>
+
+  <div class="total-amount">
+    ${safe(total)}
+  </div>
+
+  <div class="total-guide">
+    ${safe(guide)}
+  </div>
+
+</div>
+
+<div class="message">
+
+  <strong>📝 컴오아시스 추가 회신</strong>
+
+  ${safe(message)}
+
+</div>
+
+</body>
+</html>
+
+  `);
+
+  printWindow.document.close();
+
+}
 
 </script>
 
