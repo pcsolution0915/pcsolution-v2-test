@@ -314,19 +314,15 @@ body { font-family:Arial,"Malgun Gothic",sans-serif; }
 }
 
 
-/* Revision 15: more breathing room around the estimate on screen. */
-@media screen {
- body { padding:30px 28px 50px; }
- .container { max-width:1000px; }
- .card { padding:30px; }
-}
-@media screen and (max-width:800px) {
- body { padding:24px 22px 45px; }
- .card { padding:24px; }
-}
-@media screen and (max-width:500px) {
- body { padding:22px 16px 40px; }
- .card { padding:21px; }
+
+/* Revision 16: inset the PDF content independently of print-dialog margins. */
+@media print {
+ #resultSection:not(.hidden) {
+  box-sizing:border-box !important;
+  width:100% !important;
+  padding-left:8mm !important;
+  padding-right:8mm !important;
+ }
 }
 
 </style>
