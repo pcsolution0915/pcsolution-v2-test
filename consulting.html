@@ -1431,58 +1431,22 @@ async function submitQuoteRequest() {
        Supabase 저장
     ================================================== */
 
-    const {
-      data: savedQuote,
-      error
-    } = await supabaseClient
-
-      .from("quote_requests")
-
-      .insert({
-
-        customer_name:
-          customerName,
-
-        phone:
-          phone,
-
-        purpose:
-          purpose,
-
-        budget:
-          budget,
-
-        preferred_cpu:
-          preferredCpu,
-
-        preferred_gpu:
-          preferredGpu,
-
-        preferred_ram:
-          preferredRam,
-
-        preferred_ssd:
-          preferredSsd,
-
-        monitor_needed:
-          monitorNeeded,
-
-        additional_request:
-          additionalRequest,
-
-        notes:
-          additionalRequest,
-
-        status:
-          "접수"
-
-      })
-
-     .select("id, public_code")
-
-     .single();
- 
-
+    // PCSOLUTION-23: receive only the new receipt through the public creation RPC.
+    const {data: savedRows,error} = await supabaseClient.rpc(
+      "create_public_quote_request", {
+        p_customer_name: customerName,
+        p_phone: phone,
+        p_purpose: purpose,
+        p_budget: budget,
+        p_preferred_cpu: preferredCpu,
+        p_preferred_gpu: preferredGpu,
+        p_preferred_ram: preferredRam,
+        p_preferred_ssd: preferredSsd,
+        p_monitor_needed: monitorNeeded,
+        p_additional_request: additionalRequest
+      }
+    );
+    const savedQuote = Array.isArray(savedRows) ? savedRows[0] : null;
 
     if (error) {
 
@@ -1491,6 +1455,10 @@ async function submitQuoteRequest() {
     }
 
 
+
+    if (!savedQuote || !savedQuote.id || !savedQuote.public_code) {
+      throw new Error("접수 확인 정보를 받지 못했습니다. 중복 신청 전에 관리자에게 접수 여부를 확인해 주세요.");
+    }
 
     const quoteRequestId =
       savedQuote.id;
