@@ -331,6 +331,7 @@
 
 <body>
   <main class="container">
+    <p class="lookup-return no-print"><a href="index-v2.html">← 홈페이지로 돌아가기</a></p>
 
     <!-- 조회 영역 -->
 
@@ -369,7 +370,7 @@
       </form>
 
       <div
-        id="message"
+        id="message" role="status" aria-live="polite"
         class="message"
       ></div>
 
@@ -643,10 +644,10 @@
 
 
     const supabaseClient =
-      window.supabase.createClient(
+      (window.supabase ? window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY
-      );
+      ) : null);
 
 
     /* =====================================
@@ -1052,6 +1053,8 @@ function renderEstimate(data) {
 
     async function lookupQuote(publicCode) {
 
+      if(document.getElementById("lookupButton").disabled) return;
+
       const button =
         document.getElementById(
           "lookupButton"
@@ -1165,5 +1168,11 @@ function renderEstimate(data) {
 
   </script>
 
+<script>
+(function(){
+ const code=String(new URLSearchParams(window.location.search).get('code')||'').trim().toUpperCase();
+ if(code && code.length<=100){document.getElementById('quoteNumber').value=code;lookupQuote(code);}
+})();
+</script>
 </body>
 </html>
