@@ -666,10 +666,10 @@ const SUPABASE_KEY =
   "sb_publishable_ckUWAvKMJbe5xgGBIQUMIg_f7D1fcGI";
 
 const supabaseClient =
-  window.supabase.createClient(
+  (window.supabase ? window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
-  );
+  ) : null);
 
 
 /* =====================================
@@ -751,6 +751,8 @@ function getReplyToken() {
 ===================================== */
 
 async function initSupplierReplyPage() {
+  try {
+
 
   replyToken = getReplyToken();
 
@@ -808,6 +810,11 @@ async function initSupplierReplyPage() {
 
   renderQuote(data);
 
+
+  } catch(error) {
+    console.error('회신 페이지 연결 오류:',error);
+    showPageMessage('견적 정보를 불러오지 못했습니다. 연결 상태를 확인하고 새로고침해 주세요.','error');
+  }
 }
 
 /* =====================================
@@ -1159,12 +1166,16 @@ function getPartName(partType) {
 ===================================== */
 
 async function submitReply() {
+  try {
+
 
   const submitButton =
     document.getElementById(
       "submitButton"
     );
 
+
+  if(submitButton.disabled) return;
 
   const inputs =
     Array.from(
@@ -1339,6 +1350,14 @@ async function submitReply() {
 
   await initSupplierReplyPage();
 
+
+  } catch(error) {
+    console.error('회신 연결 오류:',error);
+    alert('회신 전송 결과를 확인하지 못했습니다. 새로고침해 접수 상태를 확인한 뒤 다시 시도해 주세요.');
+    const button=document.getElementById('submitButton');
+    button.disabled=false;
+    button.textContent='📤 PC SOLUTION에 회신하기';
+  }
 }
 
 /* =====================================
