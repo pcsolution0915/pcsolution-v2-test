@@ -1372,6 +1372,14 @@ section {
 .pcs-estimate-form button { border:0; border-radius:9px; padding:12px 16px; background:#086bfa; color:#fff; font-size:12px; font-weight:700; white-space:nowrap; }
 @media(max-width:760px){.pcs-estimate-card {grid-template-columns:1fr;gap:20px;padding:22px;}.pcs-estimate-form input {font-size:16px;}}
 
+
+/* Revision 13: mobile headline and visible banner signature */
+#consultationStatusList:focus-visible { outline:3px solid #087aff; outline-offset:-3px; }
+@media(max-width:500px) {
+ .hero h1 { font-size:clamp(27px,7.4vw,36px); line-height:1.25; letter-spacing:-1px; word-break:keep-all; }
+ .hero::before { content:'PC SOLUTION'; position:absolute; right:14px; bottom:132px; z-index:1; padding:5px 9px; border-radius:12px; background:#03152bcc; color:#d8f5ff; font-size:11px; font-weight:900; font-style:italic; letter-spacing:.3px; pointer-events:none; }
+}
+
 </style>
 
 </head>
@@ -1701,7 +1709,7 @@ section {
 
         </div>
 
-        <div id="consultationStatusList">
+        <div id="consultationStatusList" tabindex="0" role="region" aria-label="진행 중 상담 목록">
 
           <div class="empty-message">
             상담 현황을 불러오는 중입니다...
@@ -2441,6 +2449,8 @@ let consultationScrollTimer=null;
 let consultationScrollDirection=1;
 let consultationScrollPaused=Boolean(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 let consultationScrollInteracting=false;
+let consultationScrollResumeTimer=null;
+let consultationRenderedSignature=null;
 function stopConsultationAutoScroll(){
  if(consultationScrollTimer!==null){clearInterval(consultationScrollTimer);consultationScrollTimer=null;}
 }
@@ -2450,15 +2460,13 @@ function startConsultationAutoScroll(){
  if(!list||consultationScrollPaused||consultationScrollInteracting||list.scrollHeight<=list.clientHeight)return;
  consultationScrollTimer=setInterval(function(){
   const max=list.scrollHeight-list.clientHeight;
-  if(list.scrollTop>=max)consultationScrollDirection=-1;
-  if(list.scrollTop<=0)consultationScrollDirection=1;
+  if(list.scrollTop>=max-1)consultationScrollDirection=-1;
+  if(list.scrollTop<=1)consultationScrollDirection=1;
   list.scrollTop=Math.max(0,Math.min(max,list.scrollTop+consultationScrollDirection));
  },50);
 }
 
 function renderConsultationStatus(list) {
-
-  stopConsultationAutoScroll();
 
   const container =
     document.getElementById(
@@ -2480,6 +2488,16 @@ function renderConsultationStatus(list) {
     });
 
   activeList.sort((a,b)=>(new Date(b.created_at).getTime()||0)-(new Date(a.created_at).getTime()||0));
+  const signature=JSON.stringify(activeList.map(item=>[item.customer_name,item.created_at,item.status]));
+  // A periodic refresh of identical data must not restart or interrupt scrolling.
+  if(signature===consultationRenderedSignature) {
+    if(consultationScrollTimer===null) startConsultationAutoScroll();
+    return;
+  }
+  consultationRenderedSignature=signature;
+  const previousScrollTop=container.scrollTop;
+  stopConsultationAutoScroll();
+
 
   if (!activeList.length) {
 
@@ -2535,7 +2553,10 @@ function renderConsultationStatus(list) {
 
     }).join("");
 
-  requestAnimationFrame(startConsultationAutoScroll);
+  requestAnimationFrame(function(){
+    container.scrollTop=Math.max(0,Math.min(previousScrollTop,container.scrollHeight-container.clientHeight));
+    startConsultationAutoScroll();
+  });
 }
 
 async function loadConsultationStatus() {
@@ -2552,6 +2573,7 @@ async function loadConsultationStatus() {
   renderConsultationStatus(result.data||[]);
  } catch(error) {
   console.error('상담 현황 오류:',error);
+  consultationRenderedSignature=null;
   stopConsultationAutoScroll();
   container.innerHTML='<div class="empty-message">상담 현황을 불러오지 못했습니다.</div>';
  }
@@ -2709,13 +2731,33 @@ document.addEventListener(
  const list=document.getElementById('consultationStatusList');
  const button=document.getElementById('consultationScrollToggle');
  function update(){button.textContent=consultationScrollPaused?'자동 스크롤 시작':'자동 스크롤 정지';button.setAttribute('aria-pressed',String(consultationScrollPaused));}
- button.addEventListener('click',function(){consultationScrollPaused=!consultationScrollPaused;update();startConsultationAutoScroll();});
- list.addEventListener('mouseenter',function(){consultationScrollInteracting=true;stopConsultationAutoScroll();});
- list.addEventListener('mouseleave',function(){consultationScrollInteracting=false;startConsultationAutoScroll();});
- list.addEventListener('focusin',function(){consultationScrollInteracting=true;stopConsultationAutoScroll();});
- list.addEventListener('focusout',function(){consultationScrollInteracting=false;startConsultationAutoScroll();});
- list.addEventListener('touchstart',function(){consultationScrollPaused=true;update();stopConsultationAutoScroll();},{passive:true});
- window.addEventListener('pagehide',stopConsultationAutoScroll);
+ function clearResume(){if(consultationScrollResumeTimer!==null){clearTimeout(consultationScrollResumeTimer);consultationScrollResumeTimer=null;}}
+ function pauseForManualScroll(){
+  clearResume();
+  if(consultationScrollPaused)return;
+  consultationScrollInteracting=true;
+  stopConsultationAutoScroll();
+  consultationScrollResumeTimer=setTimeout(function(){
+   consultationScrollResumeTimer=null;consultationScrollInteracting=false;
+   if(!document.hidden)startConsultationAutoScroll();
+  },3000);
+ }
+ button.addEventListener('click',function(){
+  clearResume();consultationScrollInteracting=false;
+  consultationScrollPaused=!consultationScrollPaused;
+  update();startConsultationAutoScroll();
+ });
+ // Hover alone does not pause. Explicit manual scrolling pauses for three seconds.
+ list.addEventListener('wheel',pauseForManualScroll,{passive:true});
+ list.addEventListener('touchstart',pauseForManualScroll,{passive:true});
+ list.addEventListener('touchmove',pauseForManualScroll,{passive:true});
+ list.addEventListener('touchend',pauseForManualScroll,{passive:true});
+ list.addEventListener('keydown',function(event){if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(event.key))pauseForManualScroll();});
+ window.addEventListener('pagehide',function(){clearResume();stopConsultationAutoScroll();});
+ document.addEventListener('visibilitychange',function(){
+  if(document.hidden){clearResume();consultationScrollInteracting=false;stopConsultationAutoScroll();}
+  else startConsultationAutoScroll();
+ });
  update();
 })();
 </script>
