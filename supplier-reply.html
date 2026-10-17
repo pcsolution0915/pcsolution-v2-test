@@ -486,6 +486,19 @@
 
 @media print { #printQuoteSheet { box-sizing:border-box; width:100%; padding:0 8mm; } }
 </style>
+<style>
+
+/* Revision 21: real page summary styles, shared by screen and print. */
+.unit-summary { box-sizing:border-box; width:100%; display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,1fr); gap:0; padding:0; margin:12px 0 0; border:1px solid #172033; background:#fff; color:#172033; font-size:13px; line-height:1.5; break-inside:avoid; }
+.unit-summary > span,.unit-summary > strong { padding:9px 12px; min-width:0; }
+.unit-summary > span { border-right:1px solid #172033; background:#f4f8fd; font-weight:700; }
+.unit-summary > strong { text-align:right; overflow-wrap:anywhere; }
+@media print {
+ .unit-summary { margin-top:2mm; font-size:8pt; border:1px solid #172033; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+ .unit-summary > span,.unit-summary > strong { padding:1.5mm 2mm; }
+}
+
+</style>
 </head>
 
 
@@ -578,7 +591,7 @@
         💰 공급액 합계
       </div>
 
-      <div class="unit-summary">개당 단가 합계 <strong id="quoteUnitPriceTotal">0원</strong></div>
+      <div class="unit-summary"><span>개당 단가 합계</span><strong id="quoteUnitPriceTotal">0원</strong></div>
 <div
         id="quoteTotalAmount"
         class="quote-total-amount"
@@ -1480,7 +1493,7 @@ function printSupplierQuote() {
       </tbody>
     </table>
 
-    <div class="unit-summary">개당 단가 합계: ${unitTotal.toLocaleString("ko-KR")}원</div>
+    <div class="unit-summary"><span>개당 단가 합계</span><strong>${unitTotal.toLocaleString("ko-KR")}원</strong></div>
     <div class="print-total">
       공급액 합계 :
       ${total.toLocaleString("ko-KR")}원

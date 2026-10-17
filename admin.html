@@ -2115,6 +2115,50 @@ body.printing-customer-quote #quoteModal .danawa-area {
  body.printing-customer-quote #quoteModal .estimate-table td:nth-child(7) { width:11.794872% !important; }
 }
 </style>
+<style>
+
+.unit-summary { display:flex; justify-content:space-between; gap:15px; padding:12px 16px; margin-top:16px; border:1px solid #d5e0ee; background:#f4f8fd; font-size:13px; line-height:1.6; }
+.supplier-line-amount,.line-amount { text-align:right; font-weight:700; white-space:nowrap; }
+.pending-price { color:#718198; font-size:12px; text-align:center; }
+@media print { .unit-summary { padding:2mm; margin-top:2mm; font-size:8pt; break-inside:avoid; } }
+
+#supplierQuoteModal .supplier-table,#supplierReplyModal .supplier-table { table-layout:fixed; }
+@media print {
+ #supplierQuoteModal .supplier-table th,#supplierQuoteModal .supplier-table td,#supplierReplyModal .supplier-table th,#supplierReplyModal .supplier-table td { width:auto !important; }
+ #supplierQuoteModal .supplier-table th:nth-child(4),#supplierQuoteModal .supplier-table td:nth-child(4),#supplierReplyModal .supplier-table th:nth-child(4),#supplierReplyModal .supplier-table td:nth-child(4) { width:25% !important; }
+}
+
+
+/* Revision 21: real page summary styles, shared by screen and print. */
+.unit-summary { box-sizing:border-box; width:100%; display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,1fr); gap:0; padding:0; margin:12px 0 0; border:1px solid #172033; background:#fff; color:#172033; font-size:13px; line-height:1.5; break-inside:avoid; }
+.unit-summary > span,.unit-summary > strong { padding:9px 12px; min-width:0; }
+.unit-summary > span { border-right:1px solid #172033; background:#f4f8fd; font-weight:700; }
+.unit-summary > strong { text-align:right; overflow-wrap:anywhere; }
+@media print {
+ .unit-summary { margin-top:2mm; font-size:8pt; border:1px solid #172033; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+ .unit-summary > span,.unit-summary > strong { padding:1.5mm 2mm; }
+}
+
+#quoteModal .unit-summary { grid-template-columns:150px minmax(0,1fr); border:2px solid #172033; }
+#quoteModal .unit-summary > span { text-align:center; }
+#quoteModal .estimate-company > div { grid-template-columns:90px minmax(0,1fr); }
+#quoteModal .estimate-company strong { box-sizing:border-box; border-right:1px solid #172033; }
+#quoteModal .estimate-company span { min-width:0; overflow-wrap:anywhere; }
+@media print {
+ body.printing-customer-quote #quoteModal .unit-summary { display:grid !important; grid-template-columns:22mm minmax(0,1fr) !important; padding:0 !important; border:1px solid #172033 !important; margin:2mm 0 0 !important; font-size:8pt !important; }
+ body.printing-customer-quote #quoteModal .unit-summary > span,
+ body.printing-customer-quote #quoteModal .unit-summary > strong { display:block !important; padding:1.5mm !important; }
+ body.printing-customer-quote #quoteModal .unit-summary > span { border-right:1px solid #172033 !important; }
+ body.printing-customer-quote #quoteModal .unit-summary > strong { text-align:right !important; }
+ body.printing-customer-quote #quoteModal .estimate-summary { display:grid !important; grid-template-columns:22mm minmax(0,1fr) !important; border:1px solid #172033 !important; border-top:0 !important; }
+ body.printing-customer-quote #quoteModal .estimate-company { display:block !important; }
+ body.printing-customer-quote #quoteModal .estimate-company > div { display:grid !important; grid-template-columns:22mm minmax(0,1fr) !important; border-bottom:1px solid #172033 !important; }
+ body.printing-customer-quote #quoteModal .estimate-company > div:last-child { border-bottom:0 !important; }
+ body.printing-customer-quote #quoteModal .estimate-company strong { display:block !important; border-right:1px solid #172033 !important; text-align:center !important; padding:1.5mm !important; }
+ body.printing-customer-quote #quoteModal .estimate-company span { display:block !important; padding:1.5mm 2mm !important; }
+}
+
+</style>
 </head>
 
 <body>
@@ -3613,7 +3657,7 @@ body.printing-customer-quote #quoteModal .danawa-area {
     </div>
 
     <p style="font-size:12px;line-height:1.6;margin:12px 0">부가세 포함 · 현금/카드 동일가<br>개당 단가 합계는 참고용이며, 결제 금액은 수량을 반영한 공급액 합계입니다.</p>
-<div class="unit-summary">개당 단가 합계 <strong id="estimateUnitPriceTotal">0원</strong></div>
+<div class="unit-summary"><span>개당 단가 합계</span><strong id="estimateUnitPriceTotal">0원</strong></div>
     <div class="estimate-summary">
 
       <div>
@@ -9740,7 +9784,7 @@ async function loadPartMaster() {
       💰 공급액 합계
     </div>
 
-    <div class="unit-summary">개당 단가 합계 <strong id="supplierReplyUnitPriceTotal">0원</strong></div>
+    <div class="unit-summary"><span>개당 단가 합계</span><strong id="supplierReplyUnitPriceTotal">0원</strong></div>
 <div
       id="supplierReplyTotalAmount"
       style="

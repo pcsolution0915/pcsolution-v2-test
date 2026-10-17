@@ -333,6 +333,19 @@ body { font-family:Arial,"Malgun Gothic",sans-serif; }
 
 </style>
 
+<style>
+
+/* Revision 21: real page summary styles, shared by screen and print. */
+.unit-summary { box-sizing:border-box; width:100%; display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,1fr); gap:0; padding:0; margin:12px 0 0; border:1px solid #172033; background:#fff; color:#172033; font-size:13px; line-height:1.5; break-inside:avoid; }
+.unit-summary > span,.unit-summary > strong { padding:9px 12px; min-width:0; }
+.unit-summary > span { border-right:1px solid #172033; background:#f4f8fd; font-weight:700; }
+.unit-summary > strong { text-align:right; overflow-wrap:anywhere; }
+@media print {
+ .unit-summary { margin-top:2mm; font-size:8pt; border:1px solid #172033; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+ .unit-summary > span,.unit-summary > strong { padding:1.5mm 2mm; }
+}
+
+</style>
 </head>
 
 <body>
@@ -579,7 +592,7 @@ body { font-family:Arial,"Malgun Gothic",sans-serif; }
   <!-- 총 견적금액 -->
 
   <p style="font-size:12px;line-height:1.6;margin:12px 0">부가세 포함 · 현금/카드 동일가<br>개당 단가 합계는 참고용이며, 결제 금액은 수량을 반영한 공급액 합계입니다.</p>
-<div class="unit-summary">개당 단가 합계 <strong id="customerUnitPriceTotal">-</strong></div>
+<div class="unit-summary"><span>개당 단가 합계</span><strong id="customerUnitPriceTotal">-</strong></div>
   <div class="total-box">
 
     <div class="total-label">
