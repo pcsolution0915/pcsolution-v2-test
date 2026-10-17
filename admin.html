@@ -2074,7 +2074,47 @@ body.printing-customer-quote #quoteModal .danawa-area {
   box-sizing: border-box;
 }
 
- </style>
+ 
+/* Revision 17: customer estimate print preview side margins only. */
+@media print {
+ body.printing-customer-quote #quoteModal {
+  box-sizing:border-box !important;
+  width:100% !important;
+  padding-left:8mm !important;
+  padding-right:8mm !important;
+ }
+ body.printing-customer-quote #quoteModal .quote-modal-box,
+ body.printing-customer-quote #quoteModal .quote-modal-box.estimate-sheet {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+ }
+ body.printing-customer-quote #quoteModal .estimate-table-wrap,
+ body.printing-customer-quote #quoteModal .estimate-table {
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+ }
+ body.printing-customer-quote #quoteModal .estimate-table { table-layout:fixed !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(1),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(1) { width:10.256410% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(2),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(2) { width:11.794872% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(3),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(3) { width:20.000000% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(4),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(4) { width:28.717949% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(5),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(5) { width:6.153846% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(6),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(6) { width:11.282051% !important; }
+ body.printing-customer-quote #quoteModal .estimate-table th:nth-child(7),
+ body.printing-customer-quote #quoteModal .estimate-table td:nth-child(7) { width:11.794872% !important; }
+}
+</style>
 </head>
 
 <body>
